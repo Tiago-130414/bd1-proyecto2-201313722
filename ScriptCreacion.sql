@@ -1,0 +1,73 @@
+USE Proyecto2;
+
+CREATE TABLE FECHA_ELECCION(
+    idFechaEleccion INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    anoEleccion INT NOT NULL
+);
+
+CREATE TABLE PAIS(
+    idPais INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR (11) NOT NULL
+);
+
+CREATE TABLE PARTIDO(
+    idPartido INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    abreviacion VARCHAR (5) NOT NULL,
+    nombre VARCHAR (27) NOT NULL
+);
+
+CREATE TABLE SEXO(
+    idSexo INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    descripcion VARCHAR (7) NOT NULL
+);
+
+CREATE TABLE RAZA(
+    idRaza INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    descripcion VARCHAR (9) NOT NULL
+);
+
+CREATE TABLE ELECCION(
+    idEleccion INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR (22) NOT NULL
+);
+
+CREATE TABLE REGION(
+    idRegion INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR (12) NOT NULL,
+    idPais INT NOT NULL,
+    FOREIGN KEY (idPais) REFERENCES PAIS (idPais)
+);
+
+CREATE TABLE DEPARTAMENTO(
+    idDepartamento INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR (20) NOT NULL,
+    idRegion INT NOT NULL,
+    FOREIGN KEY (idRegion) REFERENCES REGION (idRegion)
+);
+
+CREATE TABLE MUNICIPIO(
+    idMunicipio INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR (31) NOT NULL,
+    idDepartamento INT NOT NULL,
+    FOREIGN KEY (idDepartamento) REFERENCES DEPARTAMENTO (idDepartamento)
+);
+
+CREATE TABLE DETALLE_ELECCION(
+    analfabetos INT NOT NULL,
+    alfabetos INT NOT NULL,
+    primaria INT NOT NULL,
+    nivel_medio INT NOT NULL,
+    universitario INT NOT NULL,
+    idPartido INT NOT NULL,
+    idRaza INT NOT NULL,
+    idSexo INT NOT NULL,
+    idMunicipio INT NOT NULL,
+    idFechaEleccion INT NOT NULL,
+    idEleccion INT NOT NULL,
+    FOREIGN KEY (idPartido) REFERENCES PARTIDO (idPartido),
+    FOREIGN KEY (idRaza) REFERENCES RAZA (idRaza),
+    FOREIGN KEY (idSexo) REFERENCES SEXO (idSexo),
+    FOREIGN KEY (idMunicipio) REFERENCES MUNICIPIO (idMunicipio),
+    FOREIGN KEY (idFechaEleccion) REFERENCES FECHA_ELECCION (idFechaEleccion),
+    FOREIGN KEY (idEleccion) REFERENCES ELECCION (idEleccion)
+);
