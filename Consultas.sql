@@ -135,6 +135,80 @@ INNER JOIN
 WHERE SUB4.Raza LIKE 'INDIGENAS'
 ;
 
+/*CONSULTA 5*/
+/*Desplegar el nombre del país, el departamento, el municipio y la cantidad de
+votos universitarios de todos aquellos municipios en donde la cantidad de
+votos de universitarios sea mayor que el 25% de votos de primaria y menor
+que el 30% de votos de nivel medio. Ordene sus resultados de mayor a
+menor.*/
+
+SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,
+SUB1.UNIVERSIDAD AS Universidad FROM 
+(
+	SELECT PAIS.idPais AS Pais,DEPARTAMENTO.idDepartamento AS Departamento,MUNICIPIO.idMunicipio AS Municipio,
+	SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
+	SUM(DETALLE_ELECCION.nivel_medio)AS NIVEL_MEDIO,
+	SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
+	INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+	GROUP BY Pais,Departamento,Municipio
+)SUB1
+WHERE 30*SUB1.NIVEL_MEDIO/100 > Universidad AND Universidad > 25*SUB1.PRIMARIA/100
+;
+
+/*CONSULTA 6*/
+/*Desplegar el porcentaje de mujeres universitarias y hombres universitarios
+que votaron por departamento, donde las mujeres universitarias que votaron
+fueron más que los hombres universitarios que votaron.*/
+SELECT SUB3.Pais,SUB3.Departamento,SUB3.Sexo,SUB3.Porcentaje,SUB4.Sexo,SUB4.Porcentaje FROM 
+(
+	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Sexo AS Sexo,(SUB1.suma/SUB2.suma)*100 AS Porcentaje FROM
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,SEXO.descripcion AS Sexo, SUM(DETALLE_ELECCION.universitario) as suma FROM DETALLE_ELECCION
+		INNER JOIN SEXO ON DETALLE_ELECCION.idSexo = SEXO.idSexo AND SEXO.descripcion = 'mujeres'
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY PAIS.nombre,DEPARTAMENTO.nombre,SEXO.descripcion
+	)SUB1
+	INNER JOIN
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento, SUM(DETALLE_ELECCION.universitario) as suma FROM DETALLE_ELECCION
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY PAIS.nombre,DEPARTAMENTO.nombre
+	)SUB2 ON SUB2.Pais = SUB1.Pais AND SUB2.Departamento = SUB1.Departamento
+)SUB3
+INNER JOIN
+(
+	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Sexo AS Sexo,(SUB1.suma/SUB2.suma)*100 AS Porcentaje FROM
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,SEXO.descripcion AS Sexo, SUM(DETALLE_ELECCION.universitario) as suma FROM DETALLE_ELECCION
+		INNER JOIN SEXO ON DETALLE_ELECCION.idSexo = SEXO.idSexo AND SEXO.descripcion = 'hombres'
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY PAIS.nombre,DEPARTAMENTO.nombre,SEXO.descripcion
+	)SUB1
+	INNER JOIN
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento, SUM(DETALLE_ELECCION.universitario) as suma FROM DETALLE_ELECCION
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY PAIS.nombre,DEPARTAMENTO.nombre
+	)SUB2 ON SUB2.Pais = SUB1.Pais AND SUB2.Departamento = SUB1.Departamento
+)SUB4 ON SUB4.Pais = SUB3.Pais AND SUB4.Departamento = SUB3.Departamento
+WHERE SUB3.Porcentaje > SUB4.Porcentaje
+;
+
 /*CONSULTA 7*/
 /*Desplegar el nombre del pais, la region y el promedio de votos por
 departamento. Por ejemplo: si la region tiene tres departamentos, se debe
@@ -209,7 +283,30 @@ peleadas. Para determinar esto se debe calcular la diferencia de porcentajes
 de votos entre el partido que obtuvo más votos y el partido que obtuvo menos
 votos.*/
 
+/*TOTAL DE VOTOS POR PAIS*/
+SELECT SUB1.Pais AS Pais, SUM(SUB1.Total) AS Total FROM 
+(
+	SELECT PAIS.nombre AS Pais,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
+	INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
+	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+)SUB1
+GROUP BY Pais
+;
 
+/*VOTOS POR PARTIDO*/
+SELECT SUB1.Pais AS Pais,SUB1.Partido AS Partido, SUM(SUB1.Total) AS Total FROM 
+(
+	SELECT PAIS.nombre AS Pais,PARTIDO.nombre AS Partido,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
+    INNER JOIN PARTIDO ON PARTIDO.idPartido = DETALLE_ELECCION.idPartido
+	INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
+	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+)SUB1
+GROUP BY Pais,Partido
+;
 
 
 /*CONSULTA 11*/
