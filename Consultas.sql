@@ -95,16 +95,75 @@ INNER JOIN
 /*CONSULTA 3*/
 /*Desplegar el nombre del país, nombre del partido político y número de
 alcaldías de los partidos políticos que ganaron más alcaldías por país.*/
-
-SELECT * FROM DETALLE_ELECCION
-INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
-INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+SELECT SUB5.Pais,SUB5.Partido,SUB5.Cantidad FROM 
+(
+	SELECT SUB2.Pais,SUB2.Partido,COUNT(SUB2.Partido) AS Cantidad FROM
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio, FECHA_ELECCION.anoEleccion AS Fecha,
+		PARTIDO.nombre AS Partido ,SUM(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) as Suma FROM DETALLE_ELECCION
+		INNER JOIN FECHA_ELECCION ON DETALLE_ELECCION.idFechaEleccion = FECHA_ELECCION.idFechaEleccion
+		INNER JOIN PARTIDO ON DETALLE_ELECCION.idPartido = PARTIDO.idPartido
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY Pais,Departamento,Municipio,Fecha,Partido
+	)SUB2
+	INNER JOIN
+	(
+		SELECT SUB1.Pais,SUB1.Departamento,SUB1.Municipio,MAX(SUB1.Suma) AS votos FROM 
+		(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio, FECHA_ELECCION.anoEleccion AS Fecha,
+		PARTIDO.nombre AS Partido ,SUM(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) as Suma FROM DETALLE_ELECCION
+		INNER JOIN FECHA_ELECCION ON DETALLE_ELECCION.idFechaEleccion = FECHA_ELECCION.idFechaEleccion
+		INNER JOIN PARTIDO ON DETALLE_ELECCION.idPartido = PARTIDO.idPartido
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY Pais,Departamento,Municipio,Fecha,Partido
+		)SUB1
+		GROUP BY SUB1.Pais,SUB1.Departamento,SUB1.Municipio
+	)SUB3 ON SUB2.Pais = SUB3.Pais AND SUB2.Departamento = SUB3.Departamento AND SUB2.Municipio = SUB3.Municipio AND SUB2.Suma = SUB3.votos 
+	GROUP BY SUB2.Pais,SUB2.Partido
+)SUB5
+INNER JOIN
+(
+	SELECT SUB4.Pais,MAX(SUB4.Cantidad) AS Maximo FROM
+	(
+		SELECT SUB2.Pais,SUB2.Partido,COUNT(SUB2.Partido) AS Cantidad FROM
+		(
+			SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio, FECHA_ELECCION.anoEleccion AS Fecha,
+			PARTIDO.nombre AS Partido ,SUM(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) as Suma FROM DETALLE_ELECCION
+			INNER JOIN FECHA_ELECCION ON DETALLE_ELECCION.idFechaEleccion = FECHA_ELECCION.idFechaEleccion
+			INNER JOIN PARTIDO ON DETALLE_ELECCION.idPartido = PARTIDO.idPartido
+			INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+			INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+			INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+			INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+			GROUP BY Pais,Departamento,Municipio,Fecha,Partido
+		)SUB2
+		INNER JOIN
+		(
+			SELECT SUB1.Pais,SUB1.Departamento,SUB1.Municipio,MAX(SUB1.Suma) AS votos FROM 
+			(
+			SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio, FECHA_ELECCION.anoEleccion AS Fecha,
+			PARTIDO.nombre AS Partido ,SUM(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) as Suma FROM DETALLE_ELECCION
+			INNER JOIN FECHA_ELECCION ON DETALLE_ELECCION.idFechaEleccion = FECHA_ELECCION.idFechaEleccion
+			INNER JOIN PARTIDO ON DETALLE_ELECCION.idPartido = PARTIDO.idPartido
+			INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+			INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+			INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+			INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+			GROUP BY Pais,Departamento,Municipio,Fecha,Partido
+			)SUB1
+			GROUP BY SUB1.Pais,SUB1.Departamento,SUB1.Municipio
+		)SUB3 ON SUB2.Pais = SUB3.Pais AND SUB2.Departamento = SUB3.Departamento AND SUB2.Municipio = SUB3.Municipio AND SUB2.Suma = SUB3.votos 
+		GROUP BY SUB2.Pais,SUB2.Partido
+	)SUB4
+	GROUP BY SUB4.Pais
+)SUB6 ON SUB5.Pais = SUB6.Pais AND SUB5.Cantidad = SUB6.Maximo
 ;
-
-
-
 /*CONSULTA 4*/
 /*Desplegar todas las regiones por país en las que predomina la raza indígena.
 Es decir, hay más votos que las otras razas.*/
@@ -147,9 +206,13 @@ votos universitarios de todos aquellos municipios en donde la cantidad de
 votos de universitarios sea mayor que el 25% de votos de primaria y menor
 que el 30% de votos de nivel medio. Ordene sus resultados de mayor a
 menor.*/
-SELECT SUB2.Pais AS Pais,SUB2.Departamento AS Departamento,SUB2.Municipio AS Municipio,SUB2.PP as Primaria,SUB2.PNM as Nivel_Medio,SUB2.PU AS Universidad FROM
+SELECT SUB2.Pais AS Pais,SUB2.Departamento AS Departamento,SUB2.Municipio AS Municipio,SUB2.UNIVERSIDAD FROM
 (
-	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,SUB1.PRIMARIA/SUB1.ALF*100 AS PP,SUB1.NIVEL_MEDIO/SUB1.ALF*100 AS PNM,SUB1.UNIVERSIDAD/SUB1.ALF*100 AS PU FROM 
+	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,
+    SUB1.UNIVERSIDAD,
+    SUB1.PRIMARIA/SUB1.ALF*100 AS PP,
+    SUB1.NIVEL_MEDIO/SUB1.ALF*100 AS PNM,
+    SUB1.UNIVERSIDAD/SUB1.ALF*100 AS PU FROM 
 	(
 		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio,
 		SUM(DETALLE_ELECCION.alfabetos) AS ALF,
@@ -164,17 +227,6 @@ SELECT SUB2.Pais AS Pais,SUB2.Departamento AS Departamento,SUB2.Municipio AS Mun
 	)SUB1
 )SUB2
 WHERE SUB2.PP > 25 AND SUB2.PNM < 30
-;
-
-SELECT PAIS.idPais AS Pais,DEPARTAMENTO.idDepartamento AS Departamento,MUNICIPIO.idMunicipio AS Municipio,
-SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
-SUM(DETALLE_ELECCION.nivel_medio) AS NIVEL_MEDIO,
-SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
-INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
-INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
-GROUP BY Pais,Departamento,Municipio
 ;
 
 /*CONSULTA 6*/
@@ -355,7 +407,7 @@ ORDER BY Diferencia ASC LIMIT 1
 /*CONSULTA 11*/
 /*Desplegar el total de votos y el porcentaje de votos emitidos por mujeres
 indígenas alfabetas.*/
-SELECT SUB1.Pais,SUB1.Votos,Round((SUB1.Votos/SUB2.Votos)*100,2) AS Porcentaje FROM 
+SELECT SUB1.Pais,SUB1.Votos,Round((SUB1.Votos/SUB2.Votos)*100,4) AS Porcentaje FROM 
 (
 	SELECT PAIS.nombre AS Pais,SUM(DETALLE_ELECCION.alfabetos) AS Votos FROM DETALLE_ELECCION
 	INNER JOIN SEXO ON SEXO.idSexo = DETALLE_ELECCION.idSexo AND SEXO.descripcion LIKE 'mujeres'
