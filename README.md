@@ -47,12 +47,30 @@
 
 ### RELACION ENTRE ENTIDADES
 ---
+* Una ELECCION puede tener uno o muchos de DETALLE_ELECCION.
+* Una RAZA puede tener uno o muchos de DETALLE_ELECCION.
+* Un SEXO puede tener uno o muchos de DETALLE_ELECCION.
+* Una FECHA_ELECCION puede tener uno o muchos de DETALLE_ELECCION.
+* Una PARTIDO puede tener uno o muchos de DETALLE_ELECCION.
+* Un PAIS puede tener uno o muchos de REGION.
+* Un MUNICIPIO puede tener uno o muchos DETALLE_ELECCION, puede tener un unico de DEPARTAMENTO.
+* Una REGION puede tener uno o muchos de DEPARTAMENTO, puede tener un unico de PAIS.
+* Un DEPARTAMENTO puede tener uno o muchos de municipios, puede tener un unico de REGION.
+* Un DETALLE_ELECCION puede tener un unico de RAZA,puede tener un unico de SEXO,puede tener un unico de ELECCION,puede tener un unico de PARTIDO, puede tener un unico de MUNICIPIO, puede tener un unico de FECHA_ELECCION.
+
 
 ### RESTRICCIONES A UTILIZAR
 ---
+* En tabla SEXO se creo una restriccion para que solo sea mujeres y hombres
 
 ### CONSIDERACIONES DE DISEÑO
 ---
+* Se creo la entidad RAZA para evitar redundancia de datos.
+* Se creo la entidad SEXO para evitar redundancia de datos.
+* Se creo la entidad ELECCION para evitar redundancia de datos.
+* Se creo la entidad FECHA_ELECCION para evitar redundancia de datos.
+* Se creo la entidad PARTIDO para evitar redundancia de datos.
+* Se creo la entidad DETALLE_ELECCION sin llave primaria.
 
 ### NORMALIZACION
 ---
