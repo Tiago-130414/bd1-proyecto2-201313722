@@ -44,3 +44,15 @@
 <img src="src/REGION.jpg">
 10. Pais
 <img src="src/PAIS.jpg">
+
+### RELACION ENTRE ENTIDADES
+---
+
+### RESTRICCIONES A UTILIZAR
+---
+
+### CONSIDERACIONES DE DISEÑO
+---
+
+### NORMALIZACION
+---
