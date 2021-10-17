@@ -96,6 +96,12 @@ INNER JOIN
 /*Desplegar el nombre del país, nombre del partido político y número de
 alcaldías de los partidos políticos que ganaron más alcaldías por país.*/
 
+SELECT * FROM DETALLE_ELECCION
+INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+;
 
 
 
@@ -141,21 +147,34 @@ votos universitarios de todos aquellos municipios en donde la cantidad de
 votos de universitarios sea mayor que el 25% de votos de primaria y menor
 que el 30% de votos de nivel medio. Ordene sus resultados de mayor a
 menor.*/
-
-SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,
-SUB1.UNIVERSIDAD AS Universidad FROM 
+SELECT SUB2.Pais AS Pais,SUB2.Departamento AS Departamento,SUB2.Municipio AS Municipio,SUB2.PP as Primaria,SUB2.PNM as Nivel_Medio,SUB2.PU AS Universidad FROM
 (
-	SELECT PAIS.idPais AS Pais,DEPARTAMENTO.idDepartamento AS Departamento,MUNICIPIO.idMunicipio AS Municipio,
-	SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
-	SUM(DETALLE_ELECCION.nivel_medio)AS NIVEL_MEDIO,
-	SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
-	INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
-	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
-	GROUP BY Pais,Departamento,Municipio
-)SUB1
-WHERE 30*SUB1.NIVEL_MEDIO/100 > Universidad AND Universidad > 25*SUB1.PRIMARIA/100
+	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,SUB1.PRIMARIA/SUB1.ALF*100 AS PP,SUB1.NIVEL_MEDIO/SUB1.ALF*100 AS PNM,SUB1.UNIVERSIDAD/SUB1.ALF*100 AS PU FROM 
+	(
+		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio,
+		SUM(DETALLE_ELECCION.alfabetos) AS ALF,
+		SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
+		SUM(DETALLE_ELECCION.nivel_medio) AS NIVEL_MEDIO,
+		SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
+		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		GROUP BY Pais,Departamento,Municipio
+	)SUB1
+)SUB2
+WHERE SUB2.PP > 25 AND SUB2.PNM < 30
+;
+
+SELECT PAIS.idPais AS Pais,DEPARTAMENTO.idDepartamento AS Departamento,MUNICIPIO.idMunicipio AS Municipio,
+SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
+SUM(DETALLE_ELECCION.nivel_medio) AS NIVEL_MEDIO,
+SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
+INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+GROUP BY Pais,Departamento,Municipio
 ;
 
 /*CONSULTA 6*/
@@ -214,7 +233,6 @@ WHERE SUB3.Porcentaje > SUB4.Porcentaje
 departamento. Por ejemplo: si la region tiene tres departamentos, se debe
 sumar todos los votos de la region y dividirlo dentro de tres (nu´mero de
 departamentos de la region)*/
-
 SELECT SUB2.pais,SUB2.region, SUB2.total/SUB3.cantidad FROM 
 (
 	SELECT SUB1.Pais as pais,SUB1.Region as region,SUM(suma) as total FROM 
@@ -283,36 +301,60 @@ peleadas. Para determinar esto se debe calcular la diferencia de porcentajes
 de votos entre el partido que obtuvo más votos y el partido que obtuvo menos
 votos.*/
 
-/*TOTAL DE VOTOS POR PAIS*/
-SELECT SUB1.Pais AS Pais, SUM(SUB1.Total) AS Total FROM 
+SELECT SUB5.Pais AS Pais,(SUB6.Maximo - SUB7.Minimo) AS Diferencia FROM 
 (
-	SELECT PAIS.nombre AS Pais,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
-	INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
-	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
-)SUB1
-GROUP BY Pais
-;
-
-/*VOTOS POR PARTIDO*/
-SELECT SUB1.Pais AS Pais,SUB1.Partido AS Partido, SUM(SUB1.Total) AS Total FROM 
+	SELECT SUB1.Pais AS Pais,SUB1.Partido AS Partido, SUM(SUB1.Total) AS Total FROM 
+	(
+		SELECT PAIS.nombre AS Pais,PARTIDO.nombre AS Partido,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
+		INNER JOIN PARTIDO ON PARTIDO.idPartido = DETALLE_ELECCION.idPartido
+		INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
+		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+	)SUB1
+	GROUP BY Pais,Partido
+)SUB5
+INNER JOIN
 (
-	SELECT PAIS.nombre AS Pais,PARTIDO.nombre AS Partido,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
-    INNER JOIN PARTIDO ON PARTIDO.idPartido = DETALLE_ELECCION.idPartido
-	INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
-	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
-)SUB1
-GROUP BY Pais,Partido
+	SELECT SUB2.Pais AS Pais,MAX(SUB2.Total) AS Maximo FROM 
+	(
+		SELECT SUB1.Pais AS Pais,SUB1.Partido AS Partido, SUM(SUB1.Total) AS Total FROM 
+		(
+			SELECT PAIS.nombre AS Pais,PARTIDO.nombre AS Partido,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
+			INNER JOIN PARTIDO ON PARTIDO.idPartido = DETALLE_ELECCION.idPartido
+			INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
+			INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+			INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+			INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		)SUB1
+		GROUP BY Pais,Partido
+	)SUB2
+	GROUP BY SUB2.Pais
+)SUB6 ON SUB5.Pais = SUB6.Pais
+INNER JOIN
+(
+	SELECT SUB4.Pais AS Pais,MIN(SUB4.Total) AS Minimo FROM 
+	(
+		SELECT SUB3.Pais AS Pais,SUB3.Partido AS Partido, SUM(SUB3.Total) AS Total FROM 
+		(
+			SELECT PAIS.nombre AS Pais,PARTIDO.nombre AS Partido,(DETALLE_ELECCION.alfabetos + DETALLE_ELECCION.analfabetos) AS Total FROM DETALLE_ELECCION
+			INNER JOIN PARTIDO ON PARTIDO.idPartido = DETALLE_ELECCION.idPartido
+			INNER JOIN MUNICIPIO ON  MUNICIPIO.idMunicipio = DETALLE_ELECCION.idMunicipio
+			INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+			INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+			INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+		)SUB3
+		GROUP BY Pais,Partido
+	)SUB4
+	GROUP BY SUB4.Pais
+)SUB7 ON SUB5.Pais = SUB7.Pais
+GROUP BY SUB5.Pais,Diferencia
+ORDER BY Diferencia ASC LIMIT 1
 ;
-
 
 /*CONSULTA 11*/
 /*Desplegar el total de votos y el porcentaje de votos emitidos por mujeres
 indígenas alfabetas.*/
-
 SELECT SUB1.Pais,SUB1.Votos,Round((SUB1.Votos/SUB2.Votos)*100,2) AS Porcentaje FROM 
 (
 	SELECT PAIS.nombre AS Pais,SUM(DETALLE_ELECCION.alfabetos) AS Votos FROM DETALLE_ELECCION
@@ -341,7 +383,6 @@ INNER JOIN (
 /*Desplegar el nombre del país, el porcentaje de votos de ese país en el que
 han votado mayor porcentaje de analfabetas. (tip: solo desplegar un nombre
 de país, el de mayor porcentaje).*/
-
 SELECT SUB1.Pais AS Pais,Round((SUB1.Votos/SUB2.Votos)*100,4) AS Porcentaje FROM 
 (
 	SELECT PAIS.nombre AS Pais,SUM(DETALLE_ELECCION.analfabetos) AS Votos FROM DETALLE_ELECCION
