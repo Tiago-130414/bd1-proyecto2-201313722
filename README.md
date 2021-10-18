@@ -74,3 +74,27 @@
 
 ### NORMALIZACION
 ---
+Estos son los datos disponibles para la tabla temporal, de la cual se parte en la normalizacion.
+
+<img src="src/normalizacion/Temporal.jpg">
+
+Aplicando la primera forma normal, la cual nos dice que se eliminan grupos repetidos en tablas individuales, se crea una tabla independiente para cada conjunto de datos relacionados
+y se identifican cada conjunto de relacionados con la clave principal.
+
+* Tabla Detalle Eleccion
+<img src="src/normalizacion/TablaDetalle.jpg">
+
+* Tabla Sexo
+<img src="src/normalizacion/TablaSexo.jpg">
+
+* Tabla Raza
+<img src="src/normalizacion/TablaRaza.jpg">
+
+* Tabla Partido
+<img src="src/normalizacion/TablaPartido.jpg">
+
+* Tabla Fecha Eleccion
+<img src="src/normalizacion/TablaFechaEleccion.jpg">
+
+* Tabla Eleccion
+<img src="src/normalizacion/TablaEleccion.jpg">
