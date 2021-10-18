@@ -98,3 +98,21 @@ y se identifican cada conjunto de relacionados con la clave principal.
 
 * Tabla Eleccion
 <img src="src/normalizacion/TablaEleccion.jpg">
+
+* Tabla Municipio
+<img src="src/normalizacion/TablaMunicipio.jpg">
+
+Aplicando la segunda forma normal, esta asegura que cada atributo describe la entidad
+y se crean tablas separadas para el conjunto de valores y los registros múltiples, estas tablas se deben relacionar con una clave externa.
+
+* Tabla Pais
+<img src="src/normalizacion/TablaPais.jpg">
+
+* Tabla Region
+<img src="src/normalizacion/TablaRegion.jpg">
+
+* Tabla Departamento
+<img src="src/normalizacion/TablaRegion.jpg">
+
+* Tabla Municipio
+<img src="src/normalizacion/TablaMunicipio.jpg">
