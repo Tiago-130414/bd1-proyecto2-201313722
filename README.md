@@ -112,7 +112,7 @@ y se crean tablas separadas para el conjunto de valores y los registros múltipl
 <img src="src/normalizacion/TablaRegion.jpg">
 
 * Tabla Departamento
-<img src="src/normalizacion/TablaRegion.jpg">
+<img src="src/normalizacion/TablaDepartamento.jpg">
 
 * Tabla Municipio
 <img src="src/normalizacion/TablaMunicipio.jpg">
