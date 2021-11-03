@@ -206,27 +206,24 @@ votos universitarios de todos aquellos municipios en donde la cantidad de
 votos de universitarios sea mayor que el 25% de votos de primaria y menor
 que el 30% de votos de nivel medio. Ordene sus resultados de mayor a
 menor.*/
-SELECT SUB2.Pais AS Pais,SUB2.Departamento AS Departamento,SUB2.Municipio AS Municipio,SUB2.UNIVERSIDAD FROM
+SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,
+SUB1.UNIVERSIDAD AS VotosUniversitarios,
+25 * SUB1.PRIMARIA/100 AS PorcentajePrimaria,
+30 * SUB1.NIVEL_MEDIO/100 AS PorcentajeNivelMedio FROM 
 (
-	SELECT SUB1.Pais AS Pais,SUB1.Departamento AS Departamento,SUB1.Municipio AS Municipio,
-    SUB1.UNIVERSIDAD,
-    SUB1.PRIMARIA/SUB1.ALF*100 AS PP,
-    SUB1.NIVEL_MEDIO/SUB1.ALF*100 AS PNM,
-    SUB1.UNIVERSIDAD/SUB1.ALF*100 AS PU FROM 
-	(
-		SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio,
-		SUM(DETALLE_ELECCION.alfabetos) AS ALF,
-		SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
-		SUM(DETALLE_ELECCION.nivel_medio) AS NIVEL_MEDIO,
-		SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
-		INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
-		INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
-		INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
-		INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
-		GROUP BY Pais,Departamento,Municipio
-	)SUB1
-)SUB2
-WHERE SUB2.PP > 25 AND SUB2.PNM < 30
+	SELECT PAIS.nombre AS Pais,DEPARTAMENTO.nombre AS Departamento,MUNICIPIO.nombre AS Municipio,
+	SUM(DETALLE_ELECCION.alfabetos) AS ALF,
+	SUM(DETALLE_ELECCION.primaria) AS PRIMARIA,
+	SUM(DETALLE_ELECCION.nivel_medio) AS NIVEL_MEDIO,
+	SUM(DETALLE_ELECCION.universitario) AS UNIVERSIDAD FROM DETALLE_ELECCION
+	INNER JOIN MUNICIPIO ON DETALLE_ELECCION.idMunicipio = MUNICIPIO.idMunicipio
+	INNER JOIN DEPARTAMENTO ON DEPARTAMENTO.idDepartamento = MUNICIPIO.idDepartamento
+	INNER JOIN REGION ON REGION.idRegion = DEPARTAMENTO.idRegion
+	INNER JOIN PAIS ON PAIS.idPais = REGION.idPais
+	GROUP BY Pais,Departamento,Municipio
+)SUB1
+WHERE SUB1.UNIVERSIDAD > 25 * SUB1.PRIMARIA/100 AND SUB1.UNIVERSIDAD < 30 * SUB1.NIVEL_MEDIO/100
+ORDER BY SUB1.UNIVERSIDAD DESC
 ;
 
 /*CONSULTA 6*/
